@@ -1,5 +1,3 @@
-print("dap")
-
 local dap = require('dap')
 dap.adapters.lldb = {
   type = 'executable',
@@ -11,8 +9,6 @@ local get_cmake_path = function()
   local f = vim.fn['utils#cmake#getBinaryPath']
   return f()
 end
-
-print(get_cmake_path())
 
 dap.configurations.cpp = {
   {
