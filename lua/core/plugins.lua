@@ -19,13 +19,14 @@ return require('packer').startup(function(use)
 		requires = { {'nvim-lua/plenary.nvim'} }
 	}
 
-	use 'Mofiqul/dracula.nvim'
+	use 'dracula/vim'
 
 	use ('nvim-treesitter/nvim-treesitter', {run = ':TSUpdate'})
 	use 'nvim-treesitter/playground'
 	use 'mbbill/undotree'
 	use 'tpope/vim-fugitive'
   use 'tpope/vim-surround'
+  use 'tpope/vim-repeat'
   use 'cohama/lexima.vim'
 
   use 'mfussenegger/nvim-dap'
@@ -43,6 +44,7 @@ return require('packer').startup(function(use)
   use 'williamboman/mason-lspconfig.nvim'
 
   use 'ilyachur/cmake4vim'
+  use 'unblevable/quick-scope'
 
 	if packer_bootstrap then
 		require('packer').sync()
