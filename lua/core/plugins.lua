@@ -46,6 +46,16 @@ return require('packer').startup(function(use)
   use 'ilyachur/cmake4vim'
   use 'unblevable/quick-scope'
 
+	use({
+		"epwalsh/obsidian.nvim",
+		requires = {
+			-- Required.
+			"nvim-lua/plenary.nvim",
+
+			-- see below for full list of optional dependencies 👇
+		},
+	})
+
 	if packer_bootstrap then
 		require('packer').sync()
 	end
