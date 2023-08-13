@@ -1,46 +1,19 @@
-local lsp = require('lsp-zero')
 
--- lsp.preset({
---   name = 'minimal',
---   set_lsp_keymaps = true,
---   manage_nvim_cmp = true,
---   suggest_lsp_servers = false,
--- })
---
 
-lsp.preset('recommended')
+require('mason').setup()
+local mason_lsp = require('mason-lspconfig')
 
--- (Optional) Configure lua language server for neovim
-lsp.nvim_workspace()
-
-local cmp = require('cmp')
-local cmp_select = {behavior = cmp.SelectBehavior.Select}
-local cmp_mappings = lsp.defaults.cmp_mappings({
-  ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
-  ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
-  ['<C-y>'] = cmp.mapping.confirm({ select = true }),
-  ["<C-Space>"] = cmp.mapping.complete(),
+mason_lsp.setup({
+  ensure_installed = {
+    'clangd',
+  }
 })
 
-cmp_mappings['<Tab>'] = nil
-cmp_mappings['<S-Tab>'] = nil
+local lsp_capabilities = require('cmp_nvim_lsp').default_capabilities()
+local lsp_attach = function(client, buffer)
+  local opts = {buffer = buffer, remap = false}
 
-lsp.setup_nvim_cmp({
-  mapping = cmp_mappings
-})
-
-lsp.set_preferences({
-    suggest_lsp_servers = false,
-    sign_icons = {
-        error = 'E',
-        warn = 'W',
-        hint = 'H',
-        info = 'I'
-    }
-})
-
-lsp.on_attach(function(client, bufnr)
-  local opts = {buffer = bufnr, remap = false}
+  vim.lsp.inlay_hint(buffer, true)
 
   vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
   vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
@@ -56,6 +29,33 @@ lsp.on_attach(function(client, bufnr)
   vim.keymap.set("n", "]d", function() vim.diagnostic.goto_prev() end, opts)
   vim.keymap.set("n", "<leader>vca", function() vim.lsp.buf.code_action() end, opts)
   vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, opts)
-end)
+end
 
-lsp.setup()
+
+
+local lspconfig = require('lspconfig')
+mason_lsp.setup_handlers({
+  function(server_name)
+    lspconfig[server_name].setup({
+      on_attach = lsp_attach,
+      capabilities = lsp_capabilities,
+      settings = {
+        Lua = {
+          runtime = {
+            version = 'LuaJIT',
+          },
+          diagnostics = {
+            globals = {
+              'vim',
+            },
+          },
+          workspace = {
+            library = vim.api.nvim_get_runtime_file("", true),
+            checkThirdParty = false,
+          },
+        },
+      }
+    })
+  end,
+})
+
