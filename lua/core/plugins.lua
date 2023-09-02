@@ -47,6 +47,8 @@ return require('packer').startup(function(use)
   use 'unblevable/quick-scope'
   use 'cmcfarlen/cmake-tools.nvim'
 
+  use "aserowy/tmux.nvim"
+
 	use({
 		"epwalsh/obsidian.nvim",
 		requires = {
