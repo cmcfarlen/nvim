@@ -6,3 +6,11 @@ vim.keymap.set('n', '<leader>ps', function()
 end)
 
 vim.keymap.set('n', '<leader>ws', builtin.lsp_dynamic_workspace_symbols, {})
+
+require('telescope').setup {
+  extensions = {
+    ["ui-select"] = {}
+  }
+}
+
+require("telescope").load_extension("ui-select")

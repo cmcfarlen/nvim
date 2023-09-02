@@ -59,3 +59,27 @@ mason_lsp.setup_handlers({
   end,
 })
 
+-- This shit doesn't work.  The client doesnt connect to the buffer
+--
+-- require('lspconfig').sourcekit.setup{
+--   cmd = {'/opt/swift/bin/sourcekit-lsp'},
+--   filetypes = {'swift'}
+-- }
+-- 
+-- vim.api.nvim_create_autocmd('LspAttach',
+-- {
+--  -- pattern = {"*.swift"},
+--   callback = function(ev)
+--     print(string.format("lspattach: %s (%s) ", ev.event, ev.file))
+--   end,
+-- })
+
+--vim.api.nvim_create_autocmd('LspAttach', {
+--  group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+--  callback = function(ev)
+--    print("group attach", ev)
+--  end,
+--})
+
+--vim.lsp.set_log_level("debug")
+

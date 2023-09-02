@@ -18,6 +18,7 @@ return require('packer').startup(function(use)
 		'nvim-telescope/telescope.nvim', branch = '0.1.x',
 		requires = { {'nvim-lua/plenary.nvim'} }
 	}
+  use 'nvim-telescope/telescope-ui-select.nvim'
 
 	use 'dracula/vim'
 
@@ -43,8 +44,8 @@ return require('packer').startup(function(use)
   use 'williamboman/mason.nvim'
   use 'williamboman/mason-lspconfig.nvim'
 
-  use 'ilyachur/cmake4vim'
   use 'unblevable/quick-scope'
+  use 'cmcfarlen/cmake-tools.nvim'
 
 	use({
 		"epwalsh/obsidian.nvim",
