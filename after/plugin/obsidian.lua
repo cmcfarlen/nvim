@@ -1,5 +1,6 @@
 
-require("obsidian").setup({
+local obsidian = require("obsidian")
+local client = obsidian.setup({
   dir = "~/Documents/projects",
   notes_subdir = "notes",
   daily_notes = {
@@ -14,3 +15,16 @@ require("obsidian").setup({
     return title
   end,
 })
+
+local function c(cmd)
+  return function()
+    cmd(client)
+  end
+end
+
+local command = require("obsidian.command")
+vim.keymap.set("n", "<leader>ot", c(command.today), {})
+vim.keymap.set("n", "<leader>oy", c(command.yesterday), {})
+vim.keymap.set("n", "<leader>os", c(command.search), {})
+vim.keymap.set("n", "<leader>ob", c(command.backlinks), {})
+
