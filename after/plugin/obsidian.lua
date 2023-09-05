@@ -28,3 +28,15 @@ vim.keymap.set("n", "<leader>oy", c(command.yesterday), {})
 vim.keymap.set("n", "<leader>os", c(command.search), {})
 vim.keymap.set("n", "<leader>ob", c(command.backlinks), {})
 
+
+vim.api.nvim_create_autocmd(
+  {"BufRead", "BufNewFile"},
+  { pattern = { "*.md", "*.txt" },
+    callback = function()
+      print("autocmd callback")
+      vim.api.nvim_command('setlocal wrap')
+      vim.api.nvim_command('setlocal spell spelllang=en_us')
+    end}
+
+)
+
