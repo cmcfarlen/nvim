@@ -19,11 +19,12 @@ cmp.setup({
     {name = 'nvim_lua'},
     {name = 'buffer',
      keyword_length = 3,
-     option = {
-        get_bufnrs = function()
-          return vim.api.nvim_list_bufs()
-        end
-     }},
+    --  option = {
+    --     get_bufnrs = function()
+    --       return vim.api.nvim_list_bufs()
+    --     end
+    --  }
+    },
     {name = 'luasnip', keyword_length = 3},
   },
   mapping = {
