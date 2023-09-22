@@ -54,6 +54,8 @@ return require('packer').startup(function(use)
 
   use "aserowy/tmux.nvim"
 
+  use "b0o/schemastore.nvim"
+
 	use({
 		"epwalsh/obsidian.nvim",
 		requires = {

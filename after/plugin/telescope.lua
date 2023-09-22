@@ -10,6 +10,7 @@ vim.keymap.set('n', '<leader>fgc', builtin.git_commits, {})
 vim.keymap.set('n', '<leader>fgb', builtin.git_branches, {})
 vim.keymap.set('n', '<leader>fr', builtin.live_grep, {})
 vim.keymap.set('n', '<leader>ws', builtin.lsp_dynamic_workspace_symbols, {})
+vim.keymap.set('n', '<leader>fG', function() builtin.grep_string{search=vim.fn.expand("<cword>")} end, {})
 
 require('telescope').setup {
   extensions = {

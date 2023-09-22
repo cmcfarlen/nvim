@@ -16,7 +16,7 @@ local lsp_attach = function(server_name)
   return function(_, buffer)
     local opts = {buffer = buffer, remap = false}
 
-    if server_name ~= "cmake" and server_name ~= "pyright" and server_name ~= "swift" then
+    if server_name ~= "cmake" and server_name ~= "pyright" and server_name ~= "swift" and server_name ~= "jsonls" then
       vim.lsp.inlay_hint(buffer, true)
     end
 
@@ -63,8 +63,12 @@ mason_lsp.setup_handlers({
         },
         cmake = {
           buildDirectoyr = "cmake-build-debug-llvm-16"
-        }
-      }
+        },
+        json = {
+          schemas = require('schemastore').json.schemas(),
+          validate = { enable = true },
+        },
+      },
     })
   end,
 })
