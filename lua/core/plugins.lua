@@ -29,6 +29,7 @@ return require('packer').startup(function(use)
     requires = "nvim-treesitter/nvim-treesitter",
   }
 	use 'nvim-treesitter/playground'
+	use 'nvim-treesitter/nvim-treesitter-context'
 	use 'mbbill/undotree'
 	use 'tpope/vim-fugitive'
   use 'tpope/vim-surround'
@@ -50,7 +51,7 @@ return require('packer').startup(function(use)
   use 'williamboman/mason-lspconfig.nvim'
 
   use 'unblevable/quick-scope'
-  use 'cmcfarlen/cmake-tools.nvim'
+  use 'Civitasv/cmake-tools.nvim'
 
   use "aserowy/tmux.nvim"
 

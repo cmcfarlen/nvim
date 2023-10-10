@@ -1,7 +1,7 @@
 local dap = require('dap')
 dap.adapters.lldb = {
   type = 'executable',
-  command = '/usr/bin/lldb-vscode',
+  command = '/opt/homebrew/opt/llvm/bin/lldb-vscode',
   name = 'lldb'
 }
 
@@ -43,4 +43,9 @@ end)
 vim.keymap.set('n', '<Leader>ds', function()
   dw.centered_float(dw.scopes)
 end)
+vim.keymap.set('n', '<Leader>dt', function()
+  dw.centered_float(dw.threads)
+end)
+
+
 
