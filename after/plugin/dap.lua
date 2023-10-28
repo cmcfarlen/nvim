@@ -1,8 +1,20 @@
 local dap = require('dap')
 dap.adapters.lldb = {
   type = 'executable',
-  command = '/opt/homebrew/opt/llvm/bin/lldb-vscode',
+  command = '/usr/bin/lldb-vscode',
   name = 'lldb'
+}
+
+--
+-- For swift:
+-- You gotta run codelldb
+-- codelldb --port 4321 --liblldb /home/cmcfarlen/.swiftenv/versions/5.9.1/usr/lib/liblldb.so
+--
+dap.adapters.codelldb = {
+  type = 'server',
+  host = '127.0.0.1',
+  port = 4321,
+  name = 'codelldb'
 }
 
 local get_cmake_path = function()
@@ -24,6 +36,20 @@ dap.configurations.cpp = {
 }
 dap.configurations.c = dap.configurations.cpp
 dap.configurations.rust = dap.configurations.cpp
+
+dap.configurations.swift = {
+  {
+    name = 'Launch Swift',
+    type = 'codelldb',
+    request = 'launch',
+    program = function()
+      return '${workspaceFolder}/.build/x86_64-unknown-linux-gnu/debug/swift-ednPackageTests.xctest'
+    end,
+    cwd = '${workspaceFolder}',
+    stopOnEntry = false,
+    args = {},
+  },
+}
 
 local dw = require('dap.ui.widgets')
 
