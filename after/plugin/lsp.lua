@@ -85,7 +85,7 @@ vim.api.nvim_create_autocmd("FileType", {
       if vim.fn.has('macunix') == 1 then
         return { 'xcrun', 'sourcekit-lsp' }
       else
-        return { '/opt/swift/bin/sourcekit-lsp' }
+        return { 'sourcekit-lsp' }
       end
     end
     local client = vim.lsp.start({
