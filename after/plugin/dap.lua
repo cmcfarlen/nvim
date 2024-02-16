@@ -6,8 +6,7 @@ dap.adapters.lldb = {
 }
 
 local get_cmake_path = function()
-  local f = vim.fn['utils#cmake#getBinaryPath']
-  return f()
+  return "/opt/ats-cmake/bin/traffic_server"
 end
 
 dap.configurations.cpp = {
@@ -20,7 +19,7 @@ dap.configurations.cpp = {
     end,
     cwd = '${workspaceFolder}',
     stopOnEntry = false,
-    args = {},
+    args = {"-R", "1"},
   },
 }
 dap.configurations.c = dap.configurations.cpp

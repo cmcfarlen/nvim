@@ -30,6 +30,8 @@ return require('packer').startup(function(use)
   }
 	use 'nvim-treesitter/playground'
 	use 'nvim-treesitter/nvim-treesitter-context'
+  use "lukas-reineke/indent-blankline.nvim"  -- optional
+  use "kiyoon/treesitter-indent-object.nvim"
 	use 'mbbill/undotree'
 	use 'tpope/vim-fugitive'
   use 'tpope/vim-surround'

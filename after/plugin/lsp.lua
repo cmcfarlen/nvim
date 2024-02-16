@@ -17,7 +17,7 @@ local lsp_attach = function(server_name)
     local opts = {buffer = buffer, remap = false}
 
     if server_name ~= "cmake" and server_name ~= "pyright" and server_name ~= "swift" and server_name ~= "jsonls" then
-      vim.lsp.inlay_hint(buffer, true)
+      vim.lsp.inlay_hint.enable(buffer, true)
     end
 
     vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
