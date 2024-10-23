@@ -16,8 +16,8 @@ local lsp_attach = function(server_name)
   return function(_, buffer)
     local opts = {buffer = buffer, remap = false}
 
-    if server_name ~= "cmake" and server_name ~= "pyright" and server_name ~= "swift" and server_name ~= "jsonls" then
-      vim.lsp.inlay_hint.enable(buffer, true)
+    if server_name ~= "cmake" and server_name ~= "pyright" and server_name ~= "jsonls" then
+      vim.lsp.inlay_hint.enable(true)
     end
 
     vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
@@ -25,14 +25,18 @@ local lsp_attach = function(server_name)
     vim.keymap.set("n", "gD", function() vim.lsp.buf.declaration() end, opts)
     vim.keymap.set("n", "gi", function() vim.lsp.buf.implementation() end, opts)
     vim.keymap.set("n", "go", function() vim.lsp.buf.type_definition() end, opts)
+    vim.keymap.set("n", "gs", function() vim.lsp.buf.typehierarchy("subtypes") end, opts)
+    vim.keymap.set("n", "gS", function() vim.lsp.buf.typehierarchy("supertypes") end, opts)
     --vim.keymap.set("n", "gr", function() vim.lsp.buf.references() end, opts)
     vim.keymap.set("n", "gr", ts.lsp_references, opts)
-    vim.keymap.set("n", "gs", function() vim.lsp.buf.signature_help() end, opts)
+    vim.keymap.set("n", "gh", function() vim.lsp.buf.signature_help() end, opts)
     vim.keymap.set("n", "<leader>vws", function() vim.lsp.buf.workspace_symbol() end, opts)
     vim.keymap.set("n", "<leader>vd", function() vim.diagnostic.open_float() end, opts)
     vim.keymap.set("n", "<leader>=", function() vim.lsp.buf.format() end, opts)
     vim.keymap.set("n", "[d", function() vim.diagnostic.goto_next() end, opts)
     vim.keymap.set("n", "]d", function() vim.diagnostic.goto_prev() end, opts)
+    vim.keymap.set("n", "[e", function() vim.diagnostic.goto_next({severity = vim.diagnostic.severity.ERROR}) end, opts)
+    vim.keymap.set("n", "]e", function() vim.diagnostic.goto_prev({severity = vim.diagnostic.severity.ERROR}) end, opts)
     vim.keymap.set("n", "<leader>vca", function() vim.lsp.buf.code_action() end, opts)
     vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, opts)
   end

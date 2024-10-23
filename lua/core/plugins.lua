@@ -18,6 +18,10 @@ return require('packer').startup(function(use)
 		'nvim-telescope/telescope.nvim', branch = '0.1.x',
 		requires = { {'nvim-lua/plenary.nvim'} }
 	}
+  use {
+      'stevearc/overseer.nvim',
+      config = function() require('overseer').setup() end
+  }
   use 'nvim-telescope/telescope-ui-select.nvim'
 
 	use 'dracula/vim'
@@ -56,6 +60,17 @@ return require('packer').startup(function(use)
   use 'Civitasv/cmake-tools.nvim'
 
   use "aserowy/tmux.nvim"
+  use {
+    "nvim-neotest/neotest",
+    requires = {
+      "nvim-neotest/nvim-nio",
+      "nvim-lua/plenary.nvim",
+      "antoinemadec/FixCursorHold.nvim",
+      "nvim-treesitter/nvim-treesitter",
+      "vim-test/vim-test",
+      "orjangj/neotest-ctest",
+    }
+  }
 
   use "b0o/schemastore.nvim"
 
@@ -70,6 +85,19 @@ return require('packer').startup(function(use)
 	})
 
   use 'dstein64/vim-startuptime'
+
+  -- install without yarn or npm
+  use({
+    "iamcco/markdown-preview.nvim",
+    run = function() vim.fn["mkdp#util#install"]() end,
+  })
+
+  use({ "iamcco/markdown-preview.nvim", run = "cd app && npm install", setup = function()
+    vim.g.mkdp_filetypes = { "markdown" }
+    vim.g.mkdp_preview_options = {
+      uml = { server = "http://localhost:8280" },
+    }
+  end, ft = { "markdown" }, })
 
 	if packer_bootstrap then
 		require('packer').sync()
