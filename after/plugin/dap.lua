@@ -17,8 +17,19 @@ dap.adapters.codelldb = {
   name = 'codelldb'
 }
 
+dap.adapters.swiftlldb = {
+  type = 'executable',
+  command = '/Applications/Xcode.app/Contents/Developer/usr/bin/lldb-dap',
+  name = 'swiftlldb'
+  
+}
+
 local get_cmake_path = function()
   return "/opt/ats-cmake/bin/traffic_server"
+end
+
+local find_swift_bindir = function()
+  return vim.fn.system { 'swift', 'build', '--show-bin-path' }
 end
 
 dap.configurations.cpp = {
@@ -40,10 +51,10 @@ dap.configurations.rust = dap.configurations.cpp
 dap.configurations.swift = {
   {
     name = 'Launch Swift',
-    type = 'codelldb',
+    type = 'swiftlldb',
     request = 'launch',
     program = function()
-      return '${workspaceFolder}/.build/x86_64-unknown-linux-gnu/debug/swift-ednPackageTests.xctest'
+      return vim.fn.input('Path to executable: ', find_swift_bindir() .. '/', 'file')
     end,
     cwd = '${workspaceFolder}',
     stopOnEntry = false,
