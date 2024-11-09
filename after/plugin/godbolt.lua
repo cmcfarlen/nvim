@@ -1,0 +1,13 @@
+-- require('godbolt').setup({
+--   languages = {
+--     cpp = { compiler = "clang1600", options = {
+--       userArguments = "-pthread -std=c++20",
+--       libraries = {{ id = "fmt", version = "910" }}
+--     }},
+--   },
+--   quickfix = {
+--     enable = true,
+--     auto_open = true,
+--   },
+--   url = "https://godbolt.org",
+-- })

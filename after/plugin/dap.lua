@@ -83,5 +83,3 @@ vim.keymap.set('n', '<Leader>dt', function()
   dw.centered_float(dw.threads)
 end)
 
-
-
