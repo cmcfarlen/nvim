@@ -20,6 +20,8 @@ local lsp_attach = function(server_name)
       vim.lsp.inlay_hint.enable(true)
     end
 
+    --vim.lsp.set_log_level("DEBUG")
+
     vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
     vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
     vim.keymap.set("n", "gD", function() vim.lsp.buf.declaration() end, opts)
@@ -72,36 +74,57 @@ mason_lsp.setup_handlers({
           schemas = require('schemastore').json.schemas(),
           validate = { enable = true },
         },
+        sourcekit = {
+          capabilities = {
+            workspace = {
+              didChangeWatchedFiles = {
+                dynamicRegistration = true,
+              },
+            },
+          },
+        },
       },
     })
   end,
 })
 
-local swift_lsp = vim.api.nvim_create_augroup("swift_lsp", { clear = true })
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "swift" },
-  callback = function(ev)
-    local root_dir = vim.fs.dirname(vim.fs.find({
-      "Package.swift",
-      ".git",
-    }, { upward = true })[1])
-    local cmd = function ()
-      if vim.fn.has('macunix') == 1 then
-        return { '/usr/bin/sourcekit-lsp' }
-      else
-        return { 'sourcekit-lsp' }
-      end
-    end
-    local client = vim.lsp.start({
-      name = "sourcekit-lsp",
-      cmd = cmd(),
-      root_dir = root_dir,
-      on_attach = lsp_attach("swift")
-    })
-    if client then
-      vim.lsp.buf_attach_client(ev.buf, client)
-    end
-  end,
-  group = swift_lsp,
-})
+lspconfig.sourcekit.setup {
+  on_attach = lsp_attach("sourcekit"),
+  capabilities = {
+    workspace = {
+      didChangeWatchedFiles = {
+        dynamicRegistration = true,
+      },
+    },
+  },
+}
 
+
+--local swift_lsp = vim.api.nvim_create_augroup("swift_lsp", { clear = true })
+--vim.api.nvim_create_autocmd("FileType", {
+--  pattern = { "swift" },
+--  callback = function(ev)
+--    local root_dir = vim.fs.dirname(vim.fs.find({
+--      "Package.swift",
+--      ".git",
+--    }, { upward = true })[1])
+--    local cmd = function ()
+--      if vim.fn.has('macunix') == 1 then
+--        return { '/usr/bin/sourcekit-lsp' }
+--      else
+--        return { 'sourcekit-lsp' }
+--      end
+--    end
+--    local client = vim.lsp.start({
+--      name = "sourcekit-lsp",
+--      cmd = cmd(),
+--      root_dir = root_dir,
+--      on_attach = lsp_attach("swift")
+--    })
+--    if client then
+--      vim.lsp.buf_attach_client(ev.buf, client)
+--    end
+--  end,
+--  group = swift_lsp,
+--})
+--

@@ -12,6 +12,10 @@ local client = obsidian.setup({
       name = "personal",
       path = "~/vaults/personal",
     },
+    {
+      name = "blog",
+      path = "~/projects/my/quartz/content",
+    },
   },
   daily_notes = {
     folder = "notes/journal",
@@ -37,24 +41,24 @@ local client = obsidian.setup({
       opts = { buffer = true },
     },
     -- custom
-    ["<leader>ot"] = {
-      action = function()
-        return require("obsidian").util.today()
-      end,
-      opts = { buffer = true },
-    },
-    ["<leader>oy"] = {
-      action = function()
-        return require("obsidian").util.yesterday()
-      end,
-      opts = { buffer = true },
-    },
-    ["<leader>os"] = {
-      action = function()
-        return require("obsidian").util.search()
-      end,
-      opts = { buffer = true },
-    },
+    --["<leader>ot"] = {
+    --  action = function()
+    --    return require("obsidian").util.today()
+    --  end,
+    --  opts = { buffer = true },
+    --},
+    --["<leader>oy"] = {
+    --  action = function()
+    --    return require("obsidian").util.yesterday()
+    --  end,
+    --  opts = { buffer = true },
+    --},
+    --["<leader>os"] = {
+    --  action = function()
+    --    return require("obsidian").util.search()
+    --  end,
+    --  opts = { buffer = true },
+    --},
     ["<leader>ob"] = {
       action = function()
         return require("obsidian").util.backlinks()
@@ -65,6 +69,9 @@ local client = obsidian.setup({
 
 })
 
+vim.keymap.set("n", "<leader>ot", "<Cmd>ObsidianToday<cr>")
+vim.keymap.set("n", "<leader>oy", "<Cmd>ObsidianYesterday<cr>")
+vim.keymap.set("n", "<leader>os", "<Cmd>ObsidianSearch<cr>")
 
 -- vim.opt.conceallevel = 1
 -- local obsidian = require("obsidian")

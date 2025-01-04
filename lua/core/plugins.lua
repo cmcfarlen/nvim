@@ -40,6 +40,7 @@ return require('packer').startup(function(use)
 	use 'tpope/vim-fugitive'
   use 'tpope/vim-surround'
   use 'tpope/vim-repeat'
+  use 'airblade/vim-gitgutter'
   use 'cohama/lexima.vim'
 
   use 'mfussenegger/nvim-dap'
