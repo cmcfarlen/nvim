@@ -11,3 +11,6 @@ vim.keymap.set(
 	"<cmd>Gitsigns toggle_current_line_blame<cr>",
 	{ silent = true, desc = "Toggle blame lines" }
 )
+
+vim.keymap.del("n", "<M-j>")
+vim.keymap.del("n", "<M-k>")
