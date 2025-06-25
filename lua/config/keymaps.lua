@@ -12,5 +12,5 @@ vim.keymap.set(
 	{ silent = true, desc = "Toggle blame lines" }
 )
 
-vim.keymap.del("n", "<M-j>")
-vim.keymap.del("n", "<M-k>")
+vim.keymap.del({ "n", "i", "v" }, "<M-j>")
+vim.keymap.del({ "n", "i", "v" }, "<M-k>")
