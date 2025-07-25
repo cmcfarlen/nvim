@@ -44,6 +44,10 @@ return {
 				"gh",
 				vim.lsp.buf.signature_help,
 			}
+
+			vim.diagnostic.config({
+				virtual_text = true,
+			})
 		end,
 		opts = {
 			inlay_hints = {

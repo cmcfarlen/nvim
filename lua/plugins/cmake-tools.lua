@@ -6,8 +6,8 @@ return {
 			type = "lldb",
 			request = "launch",
 			stopOnEntry = false,
-			runInTerminal = true,
-			console = "integratedTerminal",
+			runInTerminal = false,
+			-- console = "integratedTerminal",
 		},
 	},
 }

@@ -14,6 +14,8 @@ return {
 		"BufNewFile " .. vim.fn.expand("~") .. "/vaults/personal/*.md",
 		"BufReadPre " .. vim.fn.expand("~") .. "/projects/my/quartz/content/*.md",
 		"BufNewFile " .. vim.fn.expand("~") .. "/projects/my/quartz/content/*.md",
+		"BufReadPre " .. vim.fn.expand("~") .. "/projects/edge/notes/content/*.md",
+		"BufNewFile " .. vim.fn.expand("~") .. "/projects/edge/notes/content/*.md",
 	},
 	dependencies = {
 		-- Required.
@@ -35,9 +37,13 @@ return {
 				name = "blog",
 				path = "~/projects/my/quartz/content",
 			},
+			{
+				name = "edge",
+				path = "~/projects/edge/notes/content",
+			},
 		},
 		daily_notes = {
-			folder = "notes/journal",
+			folder = "journal",
 			date_format = "%Y-%m-%d",
 		},
 		completion = {
@@ -92,5 +98,6 @@ return {
 		{ "<leader>ot", "<cmd>ObsidianToday<cr>", desc = "Obsidian Today" },
 		{ "<leader>oy", "<cmd>ObsidianYesterday<cr>", desc = "Obsidian Yesterday" },
 		{ "<leader>os", "<cmd>ObsidianSearch<cr>", desc = "Obsidian Search" },
+		{ "<leader>on", "<cmd>ObsidianNew<cr>", desc = "Obsidian New" },
 	},
 }

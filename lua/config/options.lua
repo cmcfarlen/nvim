@@ -1,5 +1,5 @@
 -- quick-scope only reads the value of this at load time, so needs to go up front here
-vim.g.qs_highlight_on_keys = {'f', 't', 'F', 'T'}
+vim.g.qs_highlight_on_keys = { "f", "t", "F", "T" }
 
 local tabs = 2
 
@@ -25,4 +25,4 @@ vim.opt.incsearch = true
 vim.opt.scrolloff = 8
 vim.opt.updatetime = 50
 
-
+vim.opt.clipboard = ""
