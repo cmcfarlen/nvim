@@ -84,7 +84,7 @@ return {
 			--  end,
 			--  opts = { buffer = true },
 			--},
-			["<leader>ob"] = {
+			["<leader>jb"] = {
 				action = function()
 					return require("obsidian").util.backlinks()
 				end,
@@ -95,9 +95,9 @@ return {
 		-- see below for full list of options 👇
 	},
 	keys = {
-		{ "<leader>ot", "<cmd>ObsidianToday<cr>", desc = "Obsidian Today" },
-		{ "<leader>oy", "<cmd>ObsidianYesterday<cr>", desc = "Obsidian Yesterday" },
-		{ "<leader>os", "<cmd>ObsidianSearch<cr>", desc = "Obsidian Search" },
-		{ "<leader>on", "<cmd>ObsidianNew<cr>", desc = "Obsidian New" },
+		{ "<leader>jt", "<cmd>ObsidianToday<cr>", desc = "Obsidian Today" },
+		{ "<leader>jy", "<cmd>ObsidianYesterday<cr>", desc = "Obsidian Yesterday" },
+		{ "<leader>js", "<cmd>ObsidianSearch<cr>", desc = "Obsidian Search" },
+		{ "<leader>jn", "<cmd>ObsidianNew<cr>", desc = "Obsidian New" },
 	},
 }
