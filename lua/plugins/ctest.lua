@@ -9,7 +9,6 @@ end
 
 -- Helper function to find project root
 local function find_project_root(file_path)
-	local logger = require("neotest.logging")
 	-- Debug: show what file we're checking
 	plog().warn("Finding root for: " .. file_path)
 
@@ -65,6 +64,10 @@ return {
 		"nvim-lua/plenary.nvim",
 		-- Other neotest dependencies here
 		"orjangj/neotest-ctest",
+		-- {
+		-- 	"neotest-swift",
+		-- 	url = "git@github.pie.apple.com:jerryjrchen/neotest-swift.git",
+		-- },
 	},
 	config = function()
 		local lib = require("neotest.lib")
@@ -132,6 +135,7 @@ return {
 						}),
 					},
 				},
+				-- require("neotest-swift"),
 			},
 		})
 	end,

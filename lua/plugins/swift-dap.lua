@@ -9,7 +9,7 @@ return {
 			require("dap.repl").open_logfile()
 		end, { desc = "DAP Open Logfile" })
 		local find_swift_bindir = function()
-			return vim.fn.system({ "swift", "build", "--show-bin-path" })
+			return vim.fn.trim(vim.fn.system({ "swift", "build", "--show-bin-path" }))
 		end
 		local find_targets = function()
 			return vim.fn.system({ "swift", "package", "completion-tool", "list-executables" })
@@ -39,8 +39,10 @@ return {
 				type = "lldb",
 				request = "launch",
 				program = function()
-					return vim.fn.input("Path to executable: ", find_swift_bindir() .. "/", "file")
+					--return vim.fn.input("Path to executable: ", find_swift_bindir() .. "/", "file")
+					return find_swift_bindir() .. "/" .. "NIOSSHClient"
 				end,
+				args = { "cmcfarlen@pop-os", "echo", "$(hostname) $(whoami)" },
 				cwd = "${workspaceFolder}",
 				stopOnEntry = false,
 			},
