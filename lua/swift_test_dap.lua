@@ -1,55 +1,72 @@
 -- Adds a dap strategy to neotest-swift, which has none: <leader>td otherwise
 -- reports "Adapter doesn't support chosen strategy".
 --
--- SwiftPM links the test bundle with -bundle, so it is not executable and cannot
--- be handed to lldb directly. The toolchain's swiftpm-testing-helper dlopens the
--- bundle and runs the swift-testing entry point, so that is what gets debugged.
--- It needs Testing.framework on DYLD_FRAMEWORK_PATH, which SwiftPM normally
--- sets itself.
+-- What gets debugged differs by platform, so the .xctest artifact decides:
 --
--- The event-stream flags are passed through as well, so neotest-swift's own
--- results parsing still works after a debug run.
+--   macOS  SwiftPM links a bundle, which cannot be executed. The toolchain's
+--          swiftpm-testing-helper dlopens it and runs the swift-testing entry
+--          point, and it needs Testing.framework on DYLD_FRAMEWORK_PATH.
+--   Linux  The artifact is an executable and runs directly, no helper, no env.
+--
+-- Both take --filter and the event-stream flags, so neotest-swift's own results
+-- parsing keeps working after a debug run.
 
 local M = {}
 
-local toolchain = nil
+---@async
+---Run a command and collect both streams. Reading them concurrently avoids the
+---deadlock where one pipe fills while the other is being drained.
+---
+---Everything here goes through nio rather than vim.system: after an async call
+---the coroutine resumes in a fast event context, where vim.system():wait() dies
+---on "vim.wait must not be called in a fast event context".
+---@return integer? code, string stdout, string stderr
+local function run(cmd, args, cwd)
+	local nio = require("nio")
+	local process, err = nio.process.run({ cmd = cmd, args = args, cwd = cwd })
 
-local function xcode_toolchain()
-	if toolchain then
-		return toolchain
+	if not process then
+		return nil, "", "could not start " .. cmd .. ": " .. tostring(err)
 	end
 
-	-- vim.system rather than vim.fn.system: no fast-event restriction, and stderr
-	-- stays out of the result.
-	local result = vim.system({ "xcode-select", "-p" }, { text = true }):wait()
-	local developer = vim.trim(result.stdout or "")
+	local out, errout = "", ""
+	nio.gather({
+		function()
+			out = process.stdout.read() or ""
+		end,
+		function()
+			errout = process.stderr.read() or ""
+		end,
+	})
 
-	if developer == "" then
-		return nil
-	end
-
-	toolchain = {
-		helper = developer .. "/Toolchains/XcodeDefault.xctoolchain/usr/libexec/swift/pm/swiftpm-testing-helper",
-		frameworks = developer .. "/Platforms/MacOSX.platform/Developer/Library/Frameworks",
-	}
-	return toolchain
+	return process.result(true), out, errout
 end
 
----The executable inside the .xctest bundle, which shares the bundle's basename.
----@param root string
----@return string?
-local function find_test_executable(root)
-	local debug_dir = root .. "/.build/debug"
+---@async
+local function swift(args, cwd)
+	return run("swift", args, cwd)
+end
 
-	if not vim.uv.fs_stat(debug_dir) then
+---The built test artifact: a bundle directory on macOS, an executable on Linux.
+---@param bin_path string
+---@return string? path, string? kind "bundle"|"executable"
+local function find_test_artifact(bin_path)
+	if not vim.uv.fs_stat(bin_path) then
 		return nil
 	end
 
-	for name in vim.fs.dir(debug_dir) do
+	for name, kind in vim.fs.dir(bin_path) do
 		if name:match("%.xctest$") then
-			local exe = debug_dir .. "/" .. name .. "/Contents/MacOS/" .. (name:gsub("%.xctest$", ""))
-			if vim.uv.fs_access(exe, "X") then
-				return exe
+			local path = bin_path .. "/" .. name
+
+			if kind == "directory" then
+				-- The executable inside the bundle shares the bundle's basename.
+				local exe = path .. "/Contents/MacOS/" .. (name:gsub("%.xctest$", ""))
+				if vim.uv.fs_access(exe, "X") then
+					return exe, "bundle"
+				end
+			elseif vim.uv.fs_access(path, "X") then
+				return path, "executable"
 			end
 		end
 	end
@@ -57,58 +74,80 @@ local function find_test_executable(root)
 	return nil
 end
 
+local macos_paths = nil
+
 ---@async
----@param root string
----@return boolean ok, string? error
-local function build_tests(root)
-	local nio = require("nio")
-	local process, err = nio.process.run({
-		cmd = "swift",
-		args = { "build", "--build-tests" },
-		cwd = root,
-	})
-
-	if not process then
-		return false, "could not start swift build: " .. tostring(err)
+---swiftpm-testing-helper and Testing.framework, both outside the SDK.
+---@return table? paths, string? error
+local function macos_toolchain()
+	if macos_paths then
+		return macos_paths
 	end
 
-	local output = process.stderr.read() or ""
-	local code = process.result(true)
+	-- xcrun -f rather than exepath: `swift` on PATH is /usr/bin/swift, the xcrun
+	-- shim, so walking up from it lands outside the toolchain.
+	local _, swift_bin = run("xcrun", { "-f", "swift" })
+	local _, platform = run("xcrun", { "--show-sdk-platform-path" })
+	local bin, sdk = vim.trim(swift_bin), vim.trim(platform)
 
-	if code ~= 0 then
-		return false, "swift build --build-tests failed:\n" .. output
+	if bin == "" or sdk == "" then
+		return nil, "could not locate the active Xcode toolchain via xcrun"
 	end
-	return true
+
+	local helper = vim.fs.dirname(vim.fs.dirname(bin)) .. "/libexec/swift/pm/swiftpm-testing-helper"
+	if not vim.uv.fs_access(helper, "X") then
+		return nil, "swiftpm-testing-helper not found at " .. helper
+	end
+
+	macos_paths = { helper = helper, frameworks = sdk .. "/Developer/Library/Frameworks" }
+	return macos_paths
 end
 
 ---@async
 ---@param spec neotest.RunSpec
+---@param dap_adapter string
 ---@return table? strategy, string? error
-local function dap_strategy(spec)
-	local paths = xcode_toolchain()
-
-	if not paths or not vim.uv.fs_access(paths.helper, "X") then
-		return nil, "swiftpm-testing-helper not found in the active Xcode toolchain"
-	end
-
+local function dap_strategy(spec, dap_adapter)
 	local root = spec.cwd
+
 	if not root then
 		return nil, "no package root in the run spec"
 	end
 
-	local ok, err = build_tests(root)
-	if not ok then
-		return nil, err
+	local code, _, build_err = swift({ "build", "--build-tests" }, root)
+	if code ~= 0 then
+		return nil, "swift build --build-tests failed:\n" .. build_err
 	end
 
-	local exe = find_test_executable(root)
-	if not exe then
-		return nil, "no built .xctest bundle under " .. root .. "/.build/debug"
+	-- --show-bin-path rather than .build/debug: honors --scratch-path, the build
+	-- configuration and the target triple.
+	local bin_code, bin_out = swift({ "build", "--show-bin-path" }, root)
+	local bin_path = vim.trim(bin_out)
+	if bin_code ~= 0 or bin_path == "" then
+		return nil, "could not determine the build directory"
 	end
 
-	-- The helper wants the bundle path twice: once for --test-bundle-path and once
-	-- as the argument the swift-testing entry point inspects.
-	local args = { "--test-bundle-path", exe, exe, "--testing-library", "swift-testing" }
+	local artifact, kind = find_test_artifact(bin_path)
+	if not artifact then
+		return nil, "no built .xctest artifact under " .. bin_path
+	end
+
+	local args = {}
+	local program = artifact
+	local env = nil
+
+	if kind == "bundle" then
+		local paths, err = macos_toolchain()
+		if not paths then
+			return nil, err
+		end
+		program = paths.helper
+		env = { "DYLD_FRAMEWORK_PATH=" .. paths.frameworks }
+		-- The helper wants the path twice: once for itself, once for the entry point.
+		args = { "--test-bundle-path", artifact, artifact }
+	end
+
+	vim.list_extend(args, { "--testing-library", "swift-testing" })
 
 	for _, id in ipairs(spec.context and spec.context.test_identifiers or {}) do
 		vim.list_extend(args, { "--filter", id })
@@ -124,26 +163,29 @@ local function dap_strategy(spec)
 	end
 
 	return {
-		type = "lldb",
+		type = dap_adapter,
 		request = "launch",
 		name = "Debug swift test",
-		program = paths.helper,
+		program = program,
 		args = args,
 		cwd = root,
-		env = { "DYLD_FRAMEWORK_PATH=" .. paths.frameworks },
+		env = env,
 		console = "internalConsole",
 		stopOnEntry = false,
 	}
 end
 
 ---Wrap neotest-swift with dap support.
+---@param opts? { dap_adapter?: string }
 ---@return table?
-function M.adapter()
+function M.adapter(opts)
 	local loaded, base = pcall(require, "neotest-swift")
 
 	if not loaded then
 		return nil
 	end
+
+	local dap_adapter = (opts or {}).dap_adapter or "lldb"
 
 	local adapter = {}
 	for key, value in pairs(base) do
@@ -157,7 +199,7 @@ function M.adapter()
 			return spec
 		end
 
-		local strategy, err = dap_strategy(spec)
+		local strategy, err = dap_strategy(spec, dap_adapter)
 		if not strategy then
 			vim.notify("neotest-swift dap: " .. err, vim.log.levels.ERROR)
 			return nil

@@ -15,14 +15,18 @@ return {
 
 		--- Adapter ----------------------------------------------------------------
 
-		-- Xcode ships lldb-dap, so there is nothing to install through mason.
 		if not dap.adapters.lldb then
-			local xcode_path = vim.fn.trim(vim.fn.system("xcode-select -p"))
-			dap.adapters.lldb = {
-				type = "executable",
-				command = xcode_path .. "/usr/bin/lldb-dap",
-				name = "lldb",
-			}
+			-- Finding it is fiddly enough to live in its own module, which the Linux
+			-- container harness reuses.
+			local command = require("lldb_dap").find()
+
+			if command then
+				dap.adapters.lldb = {
+					type = "executable",
+					command = command,
+					name = "lldb",
+				}
+			end
 		end
 
 		--- Swift ------------------------------------------------------------------
