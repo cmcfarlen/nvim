@@ -21,44 +21,27 @@ return {
 						},
 					},
 				},
-				-- clangd = {
-				-- 	-- This is the key part for your exact use-case:
-				-- 	single_file_support = true, -- allows clangd on buffers with no file
-				--
-				-- 	-- Make sure root_dir resolves even when no buffer is open
-				-- 	root_dir = function(fname)
-				-- 		-- fname is "" when no file is open yet → fallback to cwd
-				-- 		return require("lspconfig.util").root_pattern(
-				-- 			"compile_commands.json",
-				-- 			"compile_flags.txt",
-				-- 			".clangd",
-				-- 			"CMakeLists.txt",
-				-- 			".git",
-				-- 			"BUILD.bazel",
-				-- 			"BUILD"
-				-- 		)(fname or "") or vim.fn.getcwd()
-				-- 	end,
-				-- 	auto_start = true,
-				--
-				-- 	-- cmd = {
-				-- 	--   "clangd",
-				-- 	--   "--background-index",
-				-- 	--   "--clang-tidy",           -- optional but nice
-				-- 	--   "--header-insertion=iwyu",
-				-- 	--   "--completion-style=detailed",
-				-- 	--   "--function-arg-placeholders",
-				-- 	--   "--fallback-style=llvm",
-				-- 	-- },
-				--
-				-- 	init_options = {
-				-- 		usePlaceholders = true,
-				-- 		completeUnimported = true,
-				-- 		clangdFileStatus = true,
-				-- 	},
-				--
-				-- 	-- Optional: if you don’t always have compile_commands.json
-				-- 	-- fallbackFlags = { "-std=c++23" },
-				-- },
+				clangd = {
+					-- This is the key part for your exact use-case:
+					single_file_support = true, -- allows clangd on buffers with no file
+
+					cmd = {
+						"clangd",
+						"--background-index",
+						"--clang-tidy", -- optional but nice
+						"--header-insertion=iwyu",
+						"--completion-style=detailed",
+						"--function-arg-placeholders",
+						"--fallback-style=llvm",
+					},
+
+					init_options = {
+						usePlaceholders = true,
+						completeUnimported = true,
+						clangdFileStatus = true,
+						fallbackFlags = { "-std=c++23" },
+					},
+				},
 			},
 		},
 		keys = {
