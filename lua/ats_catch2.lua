@@ -15,16 +15,67 @@ local M = {}
 -- expect declaration order, with setup in one TEST_CASE carrying into the next.
 local CATCH2_ARGS = { "--order", "decl" }
 
-local function build_directory()
-	local ok, cmake = pcall(require, "cmake-tools")
+local function project_root(source)
+	local marker = vim.fs.find({ "CMakePresets.json", ".git" }, {
+		path = vim.fs.dirname(source),
+		upward = true,
+	})[1]
 
-	if not ok or not cmake.is_cmake_project() then
-		return nil
+	return marker and vim.fs.dirname(marker) or nil
+end
+
+---Build directories worth searching, best first.
+---
+---cmake-tools' selection comes first so an explicit choice wins, but it cannot be
+---trusted on its own: with no configure preset selected it hands back its
+---unexpanded default, e.g. "<root>/out/${variant:buildType}". A git worktree
+---starts out in exactly that state. Fall back to configured build trees under the
+---project root, newest first.
+---@param source string
+---@return string[]
+local function candidate_build_dirs(source)
+	local dirs, seen = {}, {}
+
+	local function add(dir)
+		if not dir or dir == "" or dir:find("${", 1, true) then
+			return
+		end
+
+		dir = vim.fs.normalize(dir)
+		if not seen[dir] and vim.uv.fs_stat(dir .. "/compile_commands.json") then
+			seen[dir] = true
+			table.insert(dirs, dir)
+		end
 	end
 
-	local dir = cmake.get_build_directory()
-	dir = dir and (dir.filename or tostring(dir))
-	return dir and vim.fs.normalize(dir) or nil
+	local ok, cmake = pcall(require, "cmake-tools")
+	if ok and cmake.is_cmake_project() then
+		local selected = cmake.get_build_directory()
+		add(selected and (selected.filename or tostring(selected)))
+	end
+
+	local root = project_root(source)
+	if root then
+		local found = {}
+		for name, kind in vim.fs.dir(root) do
+			if kind == "directory" and name:match("^build") then
+				local path = root .. "/" .. name
+				local stat = vim.uv.fs_stat(path .. "/compile_commands.json")
+				if stat then
+					table.insert(found, { path = path, mtime = stat.mtime.sec })
+				end
+			end
+		end
+		-- Newest first, so a stale tree does not shadow the one being worked in.
+		table.sort(found, function(a, b)
+			return a.mtime > b.mtime
+		end)
+		for _, entry in ipairs(found) do
+			add(entry.path)
+		end
+	end
+
+	return dirs
 end
 
 -- compile_commands.json records an object file per source, and its path names
@@ -73,31 +124,33 @@ end
 ---@param source string
 ---@return string? executable, string? error
 local function test_binary(source)
-	local build_dir = build_directory()
+	local candidates = candidate_build_dirs(source)
 
-	if not build_dir then
-		return nil, "no CMake build directory selected"
+	if #candidates == 0 then
+		return nil, "no configured build directory with a compile_commands.json was found"
 	end
 
-	local sources = source_map(build_dir)
-	if not sources then
-		return nil, "could not read " .. build_dir .. "/compile_commands.json"
+	local tried = {}
+
+	for _, build_dir in ipairs(candidates) do
+		local sources = source_map(build_dir)
+		local entry = sources and sources[vim.fs.normalize(source)]
+
+		if entry then
+			local exe = entry.prefix:sub(1, 1) == "/" and (entry.prefix .. entry.target)
+				or (build_dir .. "/" .. entry.prefix .. entry.target)
+			exe = vim.fs.normalize(exe)
+
+			if vim.uv.fs_access(exe, "X") then
+				return exe
+			end
+			table.insert(tried, entry.target .. " not built in " .. build_dir)
+		else
+			table.insert(tried, vim.fs.basename(source) .. " not in " .. build_dir)
+		end
 	end
 
-	local entry = sources[vim.fs.normalize(source)]
-	if not entry then
-		return nil, vim.fs.basename(source) .. " is not in compile_commands.json (reconfigure?)"
-	end
-
-	local exe = entry.prefix:sub(1, 1) == "/" and (entry.prefix .. entry.target)
-		or (build_dir .. "/" .. entry.prefix .. entry.target)
-	exe = vim.fs.normalize(exe)
-
-	if not vim.uv.fs_access(exe, "X") then
-		return nil, entry.target .. " is not built: " .. exe
-	end
-
-	return exe
+	return nil, "no built test binary for " .. vim.fs.basename(source) .. ":\n  " .. table.concat(tried, "\n  ")
 end
 
 -- Catch2 separates test specs with commas, so a comma inside a name has to be
